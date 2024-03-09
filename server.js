@@ -36,6 +36,32 @@ app.post('/signup', async (req, res) => {
   }
 });
 
+app.post('/signin', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    // Check if the user exists
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Compare the provided password with the hashed password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    res.json({ message: 'Login successful' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
