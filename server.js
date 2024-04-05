@@ -5,9 +5,11 @@ const connectToMongoDB = require('./database.js'); // Adjust the path as necessa
 const User = require('./User'); 
 const TempUser = require('./TempUser');
 const app = express();
+const cors = require('cors');
+
 
 app.use(express.json());
-app.use(express.static(path.join('/Users/peterbaramki/Desktop/CafeConnectFrontend/build'))); //Adjust the path here
+app.use(express.static(path.join('/Users/jadhneiny/Desktop/uni/Courses/Spring 2024/CMPS 271/Project/Code/CafeConnectFrontend-main/build'))); //Adjust the path here
 
 const nodemailer = require('nodemailer');
 
@@ -134,6 +136,81 @@ app.post('/verify', async (req, res) => {
       res.status(500).send('An error occurred during verification.');
   }
 });
+
+
+// Schema for items in database
+
+const mongoose = require('mongoose');
+
+const menuItemSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  description: String,
+  price: { type: Number, required: true },
+  availability: {
+    Monday: Number,
+    Tuesday: Number,
+    Wednesday: Number,
+    Thursday: Number,
+    Friday: Number,
+    Saturday: Number,
+    Sunday: Number,
+  },
+});
+
+module.exports = mongoose.model('MenuItem', menuItemSchema);
+
+// Middleware
+app.use(cors());
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
+
+// POST: Create a new menu item
+app.post('/api/menuItems', async (req, res) => {
+  const newItem = new MenuItem(req.body);
+  try {
+    const savedItem = await newItem.save();
+    res.status(201).json(savedItem);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// GET: Retrieve all menu items
+app.get('/api/menuItems', async (req, res) => {
+  try {
+    const items = await MenuItem.find();
+    res.json(items);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// PUT: Update an existing menu item
+app.put('/api/menuItems/:id', async (req, res) => {
+  try {
+    const updatedItem = await MenuItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedItem) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+    res.json(updatedItem);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// DELETE: Remove a menu item
+app.delete('/api/menuItems/:id', async (req, res) => {
+  try {
+    const item = await MenuItem.findByIdAndDelete(req.params.id);
+    if (!item) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+    res.json({ message: "Item deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 
 
 app.get('*', (req, res) => {
