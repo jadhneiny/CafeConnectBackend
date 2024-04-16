@@ -8,8 +8,9 @@ const MenuItem = require('./MenuItems');
 const app = express();
 const cors = require('cors');
 
-app.use(express.json());
-app.use(express.static(path.join('/Users/peterbaramki/Desktop/CafeConnectFrontend/build'))); //Adjust the path here
+app.use(cors());
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
 
 const nodemailer = require('nodemailer');
 
@@ -43,12 +44,8 @@ const sendVerificationEmail = (userEmail, verificationCode) => {
   });
 };
 
-app.use(cors());
-app.use(express.json()); 
-app.use(express.urlencoded({ extended: true }));
-
 // POST: Create a new menu item
-app.post('/api/menuItems', async (req, res) => {
+app.post('/api/createItem', async (req, res) => {
   const newItem = new MenuItem(req.body);
   try {
     const savedItem = await newItem.save();
@@ -133,10 +130,8 @@ app.post('/signin', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find the user by email
     const user = await User.findOne({ email });
 
-    // Check if the user exists
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -187,6 +182,7 @@ app.post('/verify', async (req, res) => {
   }
 });
 
+app.use(express.static(path.join('/Users/peterbaramki/Desktop/CafeConnectFrontend/build'))); //Adjust the path here
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
