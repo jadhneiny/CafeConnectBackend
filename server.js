@@ -91,6 +91,19 @@ app.delete('/api/menuItems/:id', async (req, res) => {
   }
 });
 
+// EDIT: Edit a menu item
+app.put('/api/menuItems/:id', async (req, res) => {
+  try {
+    const updatedItem = await MenuItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedItem) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+    res.json(updatedItem);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
 app.post('/signup', async (req, res) => {
   const { name, email, password } = req.body;
 
