@@ -12,6 +12,7 @@ app.use(cors());
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
 
+
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
@@ -65,18 +66,6 @@ app.get('/api/getMenuItems', async (req, res) => {
   }
 });
 
-// PUT: Update an existing menu item
-app.put('/api/menuItems/:id', async (req, res) => {
-  try {
-    const updatedItem = await MenuItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedItem) {
-      return res.status(404).json({ message: "Item not found" });
-    }
-    res.json(updatedItem);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
 
 // DELETE: Remove a menu item
 app.delete('/api/menuItems/:id', async (req, res) => {
@@ -91,19 +80,33 @@ app.delete('/api/menuItems/:id', async (req, res) => {
   }
 });
 
-// EDIT: Edit a menu item
+
+// PUT: Update an existing menu item
 app.put('/api/menuItems/:id', async (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body;
+
   try {
-    const updatedItem = await MenuItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedItem) {
+    const item = await MenuItem.findById(id);
+    if (!item) {
       return res.status(404).json({ message: "Item not found" });
     }
+
+    // Manually merge the top-level fields
+    Object.keys(updateData).forEach(key => {
+      if (key === 'availability' && typeof updateData[key] === 'object') {
+        item[key] = {...item[key], ...updateData[key]}; // Merge availability objects
+      } else {
+        item[key] = updateData[key];
+      }
+    });
+
+    const updatedItem = await item.save();
     res.json(updatedItem);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
-
 app.post('/signup', async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -195,11 +198,12 @@ app.post('/verify', async (req, res) => {
   }
 });
 
-app.use(express.static(path.join('/Users/peterbaramki/Desktop/CafeConnectFrontend/build'))); //Adjust the path here
+ app.use(express.static('C:/Users/User/Desktop/proj271sprint4/CafeConnectFrontend/build')); //Adjust the path here
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
+
 
 const port = process.env.PORT || 8080;
 
