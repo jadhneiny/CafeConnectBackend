@@ -198,7 +198,7 @@ app.post('/verify', async (req, res) => {
   }
 });
 
- app.use(express.static('C:/Users/User/Desktop/proj271sprint4/CafeConnectFrontend/build')); //Adjust the path here
+ app.use(express.static('../CafeConnectFrontend/build')); //Adjust the path here
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
